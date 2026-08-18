@@ -1,59 +1,62 @@
-# ESP32 DS4 Bridge
+<h1 align="center">ESP32 DS4 Bridge</h1>
 
-![ESP32](https://img.shields.io/badge/ESP32-Bluetooth%20Bridge-red)
-![Arduino](https://img.shields.io/badge/Arduino-Compatible-00979D)
-![Bluepad32](https://img.shields.io/badge/Bluepad32-Controller%20Input-blue)
-![Python](https://img.shields.io/badge/Python-3.x-3776AB)
-![Linux](https://img.shields.io/badge/Linux-evdev%20%2F%20uinput-FCC624)
+<p align="center">
+  <img alt="ESP32" src="https://img.shields.io/badge/ESP32-Bluetooth%20Bridge-E7352C">
+  <img alt="Arduino" src="https://img.shields.io/badge/Arduino-Compatible-00979D">
+  <img alt="Bluepad32" src="https://img.shields.io/badge/Bluepad32-Controller%20Input-2563EB">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.x-3776AB">
+  <img alt="Linux" src="https://img.shields.io/badge/Linux-evdev%20%2F%20uinput-FCC624">
+</p>
 
-This project turns an ESP32 into a small Bluetooth bridge for a DualShock 4
-controller. The ESP32 talks to the controller with Bluepad32, sends clean serial
-packets over USB, and the PC-side Python script turns those packets into Linux
-virtual input devices.
+<p align="center">
+  A lightweight ESP32-to-Linux bridge for using a DualShock 4 as a virtual
+  DS4-style controller.
+</p>
 
-The goal is simple: make a DS4-style controller device that Steam and Linux
-games can understand, while keeping the ESP32 firmware small and easy to debug.
+---
+
+This project turns an ESP32 into a small Bluetooth bridge for a DualShock 4.
+The ESP32 talks to the controller with Bluepad32, sends clean serial packets
+over USB, and the PC-side Python script turns those packets into Linux virtual
+input devices.
+
+The goal is simple: make a DS4-style controller that Steam and Linux games can
+understand, while keeping the ESP32 firmware small and easy to debug.
 
 ## How It Works
-
-The input path is:
 
 ```text
 DualShock 4 -> ESP32 over Bluetooth -> USB serial -> pc-side.py -> Linux evdev/uinput
 ```
 
-The ESP32 sketch reads the controller state and prints two packet types:
+The ESP32 sketch reads the controller state and prints compact serial packets.
+On Linux, `pc-side.py` reads those packets and creates virtual input devices.
 
-- `G` packets for gamepad buttons, sticks, triggers, d-pad, and misc buttons.
-- `M` packets for the DS4 touchpad, exposed as a small relative mouse device.
+| Packet | Purpose |
+| --- | --- |
+| `G` | Gamepad buttons, sticks, triggers, d-pad, and misc buttons |
+| `M` | DS4 touchpad input as a relative mouse |
 
-On the PC, `pc-side.py` reads those serial packets and creates:
-
-- A virtual DS4-like gamepad named `Sony Interactive Entertainment Wireless Controller`.
-- A virtual touchpad mouse named `ESP32 DS4 Touchpad`.
+| Virtual device | Name |
+| --- | --- |
+| Gamepad | `Sony Interactive Entertainment Wireless Controller` |
+| Touchpad mouse | `ESP32 DS4 Touchpad` |
 
 ## Project Files
 
-- `esp32-side/esp32-side.ino` is the main ESP32 firmware.
-- `pc-side.py` is the Linux bridge that reads serial data and creates virtual input devices.
-- `identify-btns/identify-btns.ino` is a helper sketch for checking raw button values.
-- `btns-map.md` contains the captured button mapping notes.
+| Path | Description |
+| --- | --- |
+| `esp32-side/esp32-side.ino` | Main ESP32 firmware |
+| `pc-side.py` | Linux serial-to-evdev bridge |
+| `identify-btns/identify-btns.ino` | Helper sketch for checking raw button values |
+| `btns-map.md` | Captured button mapping notes |
 
 ## Requirements
 
-### ESP32 Side
-
-- An ESP32 board.
-- Arduino IDE, Arduino CLI, or another ESP32-compatible build setup.
-- Bluepad32 installed for the ESP32 environment.
-- A DualShock 4 controller.
-
-### PC Side
-
-- Linux.
-- Python 3.
-- Access to `/dev/uinput`.
-- Python packages:
+| Side | Requirements |
+| --- | --- |
+| ESP32 | ESP32 board, Arduino-compatible build setup, Bluepad32, DualShock 4 |
+| PC | Linux, Python 3, `/dev/uinput` access, serial access |
 
 ```bash
 python3 -m pip install pyserial evdev
@@ -69,8 +72,8 @@ Depending on your system permissions, you may need to run the bridge with
 3. Flash the sketch to the ESP32.
 4. Connect the ESP32 to the PC over USB.
 5. Pair or connect the DualShock 4 to the ESP32.
-6. Find the ESP32 serial port, usually something like `/dev/ttyUSB0` or `/dev/ttyACM0`.
-7. Start the PC bridge:
+6. Find the ESP32 serial port, usually `/dev/ttyUSB0` or `/dev/ttyACM0`.
+7. Start the PC bridge.
 
 ```bash
 python3 pc-side.py /dev/ttyUSB0
@@ -81,13 +84,13 @@ Use your actual serial port if it is different.
 When it starts correctly, the script prints the virtual device paths and then
 keeps running while it forwards controller input.
 
-## Button And Axis Notes
+## Mapping Notes
 
 The mappings in `pc-side.py` are intentional. Some of the Linux button codes may
 look unusual at first glance because Steam applies its own DS4 mapping based on
 raw button indexes and axis order.
 
-The script arranges axes so Steam sees them roughly like this:
+The script arranges axes so Steam sees them roughly like this.
 
 ```text
 a0 = Left X
@@ -98,12 +101,11 @@ a4 = R2
 a5 = Right Y
 ```
 
-Triggers are handled as both analog axes and digital button presses. The digital
-press is generated when the analog trigger value crosses the configured
-threshold in `pc-side.py`.
-
-The touchpad is handled separately from the main gamepad. It becomes a relative
-mouse device with left click, X/Y motion, and scroll wheel support.
+| Input | Handling |
+| --- | --- |
+| L2/R2 | Analog axes plus digital button presses using a threshold |
+| D-pad | Converted to `ABS_HAT0X` and `ABS_HAT0Y` |
+| Touchpad | Separate relative mouse with click, X/Y motion, and scroll |
 
 ## Identifying Buttons
 
@@ -117,23 +119,19 @@ and restart the Python bridge.
 
 ## Troubleshooting
 
-If the Python script cannot open the serial port, check that the port path is
-correct and that your user has permission to access it.
+| Problem | What to check |
+| --- | --- |
+| Serial port will not open | Confirm the path and user permissions |
+| Virtual device creation fails | Check `/dev/uinput` permissions |
+| Steam sees wrong buttons or axes | Keep the intentional DS4/Steam mapping comments in `pc-side.py` in mind |
+| Input feels noisy | Adjust `applyDeadzone()` in `esp32-side/esp32-side.ino` |
 
-If the script fails while creating virtual input devices, check `/dev/uinput`
-permissions. Running with `sudo` is the quickest test:
+Running with `sudo` is the quickest way to test whether the issue is a
+permissions problem.
 
 ```bash
 sudo python3 pc-side.py /dev/ttyUSB0
 ```
-
-If Steam sees the wrong buttons or axes, keep the existing comments in
-`pc-side.py` in mind. Some mappings are deliberately shifted to match what Steam
-expects from a DS4-like Linux input device.
-
-If the controller connects but input feels noisy, the ESP32 sketch already
-applies a small analog stick deadzone. You can adjust `applyDeadzone()` in
-`esp32-side/esp32-side.ino` if your controller needs more or less filtering.
 
 ## Notes
 

@@ -1,5 +1,11 @@
 # ESP32 DS4 Bridge
 
+![ESP32](https://img.shields.io/badge/ESP32-Bluetooth%20Bridge-red)
+![Arduino](https://img.shields.io/badge/Arduino-Compatible-00979D)
+![Bluepad32](https://img.shields.io/badge/Bluepad32-Controller%20Input-blue)
+![Python](https://img.shields.io/badge/Python-3.x-3776AB)
+![Linux](https://img.shields.io/badge/Linux-evdev%20%2F%20uinput-FCC624)
+
 This project turns an ESP32 into a small Bluetooth bridge for a DualShock 4
 controller. The ESP32 talks to the controller with Bluepad32, sends clean serial
 packets over USB, and the PC-side Python script turns those packets into Linux

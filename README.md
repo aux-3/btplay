@@ -138,4 +138,4 @@ sudo python3 pc-side.py /dev/ttyUSB0
 This project is currently Linux-focused because it depends on `evdev` and
 `uinput` on the PC side.
 
-Note: this project was vibecoded.
+** this project was vibecoded. **
